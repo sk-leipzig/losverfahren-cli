@@ -3,6 +3,7 @@ package org.skleipzig.losverfahrencli.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.apachecommons.CommonsLog;
 import org.skleipzig.losverfahrencli.domain.Pupil.ProjectGroupPreference;
 
 import java.util.ArrayList;
@@ -10,9 +11,11 @@ import java.util.List;
 import java.util.function.Function;
 
 import static org.skleipzig.losverfahrencli.domain.Pupil.PREFERENCE_DEFINITIONS;
+import static org.springframework.util.StringUtils.collectionToDelimitedString;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@CommonsLog
 public class Distribution {
     private final List<Pupil> unassignedPupils;
     private final List<Attendance> attendances;
@@ -39,14 +42,18 @@ public class Distribution {
     public Distribution assignByPreference() {
         Distribution result = this;
         for (Function<Pupil, ProjectGroupPreference> preferenceDefinition : PREFERENCE_DEFINITIONS) {
+            log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
             for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
+                log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
                 List<Pupil> pupilsToAssign = result.getUnassignedPupils()
                         .stream()
                         .filter(pupil -> preferenceDefinition.apply(pupil).test(openProjectGroup))
                         .toList();
+                log.debug("Pupils to assign: " + Pupil.pupilCollectionToString(pupilsToAssign));
                 result = result.assignPupils(openProjectGroup, pupilsToAssign);
             }
         }
+        log.debug("Result:\n"+ collectionToDelimitedString(result.attendances, "\n", "\t", ""));
         return result;
     }
 

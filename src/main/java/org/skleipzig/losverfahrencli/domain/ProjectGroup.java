@@ -3,9 +3,11 @@ package org.skleipzig.losverfahrencli.domain;
 import lombok.Data;
 import org.skleipzig.losverfahrencli.csv.ProjectGroupDTO;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 public class ProjectGroup {
@@ -26,5 +28,14 @@ public class ProjectGroup {
         return projectGroups.stream()
                 .filter(projectGroup -> Objects.equals(projectGroup.getProjectName(), projectName))
                 .findAny();
+    }
+
+    public boolean isSameProjectGroup(ProjectGroup other) {
+        return projectName.equals(other.projectName);
+    }
+
+    public static String projectGroupNames(Collection<ProjectGroup> projectGroups) {
+        return projectGroups == null || projectGroups.isEmpty() ? "N/A" :
+                projectGroups.stream().map(ProjectGroup::getProjectName).collect(Collectors.joining(", "));
     }
 }

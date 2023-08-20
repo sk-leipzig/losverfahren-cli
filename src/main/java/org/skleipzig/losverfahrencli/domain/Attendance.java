@@ -4,12 +4,16 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.apachecommons.CommonsLog;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.skleipzig.losverfahrencli.domain.Pupil.pupilCollectionToString;
+
 @Data
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@CommonsLog
 public class Attendance {
     @NonNull
     private final ProjectGroup projectGroup;
@@ -35,11 +39,23 @@ public class Attendance {
                 .filter(pupil -> pupil.canAttend(projectGroup))
                 .limit(getAvailableSlots())
                 .collect(Collectors.toSet());
+        String newAttendeeNames = pupilCollectionToString(updatedAttendees);
         updatedAttendees.addAll(attendees);
-        return new Attendance(projectGroup, updatedAttendees);
+        Attendance result = new Attendance(projectGroup, updatedAttendees);
+        if (log.isDebugEnabled()) {
+            HashSet<Pupil> unAssignedPupils = new HashSet<>(pupils);
+            unAssignedPupils.removeAll(updatedAttendees);
+            log.debug(String.format("Assigned %s to project %s. Remaining capacity: %d. Pupils not assigned: %s",
+                    newAttendeeNames, projectGroup.getProjectName(), result.getAvailableSlots(), pupilCollectionToString(unAssignedPupils)));
+        }
+        return result;
     }
 
     public static Attendance createAttendance(ProjectGroup projectGroup) {
         return new Attendance(projectGroup, new HashSet<>());
+    }
+
+    public String toString() {
+        return "Attendance[" + projectGroup.getProjectName() + ", " + Pupil.pupilCollectionToString(attendees) + "]";
     }
 }
