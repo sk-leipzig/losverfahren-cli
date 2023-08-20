@@ -19,7 +19,7 @@ class DistributionTest {
 
     @BeforeEach
     void setUp() {
-        goetheDenkt = new ProjectGroup(GOETHE_DENKT, 6, 7, 2);
+        goetheDenkt = new ProjectGroup(GOETHE_DENKT, 6, 7, 3);
         ohneGoethe = new ProjectGroup(GOETHE_NIEST, 7, 8, 3);
         goetheNiest = new ProjectGroup(OHNE_GOETHE, 9, 10, 1);
     }
@@ -27,7 +27,7 @@ class DistributionTest {
     @Test
     void allPupilsAssigned() {
         List<Attendance> attendances = Distribution.create(List.of(goetheNiest, goetheDenkt, ohneGoethe), ALL_PUPILS)
-                .assignByPreference()
+                .assignAllPupils()
                 .getAttendances();
         assertThat("Testsetup error", ALL_PUPILS, containsInAnyOrder(STEFAN, FRITZ, MONI, FRANZI, CHILLER, CARL, LUMPI));
         assertAll(

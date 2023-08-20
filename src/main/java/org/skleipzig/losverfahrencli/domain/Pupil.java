@@ -1,7 +1,7 @@
 package org.skleipzig.losverfahrencli.domain;
 
 import lombok.Data;
-import org.skleipzig.losverfahrencli.csv.PupilDTO;
+import org.skleipzig.losverfahrencli.csv.PupilVoteResultDTO;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,12 +25,12 @@ public class Pupil {
 
     private final ProjectGroupPreference tertiaryPreference;
 
-    public static Pupil fromDTO(PupilDTO pupilDTO, List<ProjectGroup> availableProjectGroups) {
-        return new Pupil(pupilDTO.getEmailAddress(),
-                Integer.parseInt(pupilDTO.getForm()),
-                createPreference(pupilDTO.getPrimaryChoice(), availableProjectGroups),
-                createPreference(pupilDTO.getSecondaryChoice(), availableProjectGroups),
-                createPreference(pupilDTO.getTertiaryChoice(), availableProjectGroups)
+    public static Pupil fromDTO(PupilVoteResultDTO pupilVoteResultDTO, List<ProjectGroup> availableProjectGroups) {
+        return new Pupil(pupilVoteResultDTO.getLogin(),
+                Integer.parseInt(pupilVoteResultDTO.getForm()),
+                createPreference(pupilVoteResultDTO.getPrimaryChoice(), availableProjectGroups),
+                createPreference(pupilVoteResultDTO.getSecondaryChoice(), availableProjectGroups),
+                createPreference(pupilVoteResultDTO.getTertiaryChoice(), availableProjectGroups)
         );
     }
 

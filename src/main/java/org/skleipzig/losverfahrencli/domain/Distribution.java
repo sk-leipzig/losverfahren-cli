@@ -36,10 +36,15 @@ public class Distribution {
     }
 
     /**
-     * Weist alle freien Schüler nach ihrer Preferenz zu einem Projekt zu, beginnend mit dem Erstwunsch.
-     * Wenn keine Zuweisung anhand Präferenz mehr möglicht ist, endet der Vorgang.
+     * Weist alle freien Schüler nach ihrer Präferenz zu einem Projekt zu, beginnend mit dem Erstwunsch.
+     * Wenn keine Zuweisung anhand Präferenz mehr möglich ist, wird ohne Berücksichtigung der Präferenzen weiter verteilt.
      */
-    public Distribution assignByPreference() {
+    public Distribution assignAllPupils() {
+        return assignByPreference().assignRemainingPupils();
+    }
+
+    private Distribution assignByPreference() {
+        log.debug("assignByPreference");
         Distribution result = this;
         for (Function<Pupil, ProjectGroupPreference> preferenceDefinition : PREFERENCE_DEFINITIONS) {
             log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
@@ -53,7 +58,20 @@ public class Distribution {
                 result = result.assignPupils(openProjectGroup, pupilsToAssign);
             }
         }
-        log.debug("Result:\n"+ collectionToDelimitedString(result.attendances, "\n", "\t", ""));
+        log.debug(result.createResultString());
+        return result;
+    }
+
+    private Distribution assignRemainingPupils() {
+        log.debug("assignRemainingPupils");
+        Distribution result = this;
+        log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
+        for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
+            log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
+            log.debug("Pupils to assign: " + result.unassignedPupils);
+            result = result.assignPupils(openProjectGroup, result.unassignedPupils);
+        }
+        log.debug(result.createResultString());
         return result;
     }
 
@@ -75,4 +93,10 @@ public class Distribution {
         }
     }
 
+    private String createResultString() {
+        return "Result:\n" + collectionToDelimitedString(attendances, "\n", "\t", "") +
+                "\nStill unassigned:" + Pupil.pupilCollectionToString(getUnassignedPupils()) +
+                "\nOpen ProjectGroups: " + ProjectGroup.projectGroupNames(getOpenProjectGroups());
+
+    }
 }
