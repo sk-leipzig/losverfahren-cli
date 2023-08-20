@@ -55,6 +55,10 @@ public class Attendance {
         return new Attendance(projectGroup, new HashSet<>());
     }
 
+    public RemainingSeats getRemainingSeats() {
+        return new RemainingSeats(projectGroup, getAvailableSlots());
+    }
+
     public String toString() {
         String attendeeString = attendees.stream()
                 .map(Pupil::toString)

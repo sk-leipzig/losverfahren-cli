@@ -35,6 +35,7 @@ public class CsvHandler {
     static final String HELP_TXT_PROJECTS_FILE_NAME = "Name der CSV Datei mit den Projektgruppen. " + HINT_FILE_NAME;
     static final String HELP_TXT_VOTINGS_FILE_NAME = "Name der CSV Datei mit den Umfrageergebnissen. " + HINT_FILE_NAME;
     static final String HELP_TXT_RESULTS_FILE_NAME = "Name der CSV Datei, in die die Ergebnisse geschrieben werden sollen. " + HINT_FILE_NAME;
+    static final String HELP_TXT_REMAINING_SEATS_FILE_NAME = "Name der CSV Datei, in die die Liste der Projekte mit offenen Restplätzen geschrieben werden soll. " + HINT_FILE_NAME;
     static final String WARNING_NO_PROJECT_GROUPS = "Warnung: Es wurden keine Projektgruppen gefunden! Die Abstimmungsergebnisse können erst ausgewertet werden, wenn die Projektgruppen eingelesen wurden!";
     static final String WARNING_NO_PUPILS = "Warnung: Es wurden keine Schüler gefunden! Votings von Schülern, die nicht importiert wurden, werden ignoriert!";
 
@@ -127,6 +128,28 @@ public class CsvHandler {
             return "Exportierte Datensätze:\n\t" + StringUtils.collectionToDelimitedString(pupilAssignmentDTOS, "\n\t");
         } catch (IOException e) {
             return errorReadingFile(resultsFileName, e);
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @ShellMethod(key = "writeRemainingSeats", group = "export", value = "Offene Restplätze in CSV Datei exportieren")
+    public String writeRemainingSeats(@ShellOption(help = HELP_TXT_REMAINING_SEATS_FILE_NAME) String remainingSeatsFileName, @ShellOption(defaultValue = ";", help = "Trennzeichen") String separator) {
+
+        try (Writer writer = new FileWriter(Paths.get(remainingSeatsFileName)
+                .toString())) {
+
+            StatefulBeanToCsv<RemainingSeatsDTO> sbc = new StatefulBeanToCsvBuilder<RemainingSeatsDTO>(writer).withQuotechar('\'')
+                    .withSeparator(separator.charAt(0))
+                    .build();
+
+
+            List<RemainingSeatsDTO> remainingSeatsDTOs = RemainingSeatsDTO.fromDistribution(context.getDistribution());
+            sbc.write(remainingSeatsDTOs);
+
+            return "Exportierte Datensätze:\n\t" + StringUtils.collectionToDelimitedString(remainingSeatsDTOs, "\n\t");
+        } catch (IOException e) {
+            return errorReadingFile(remainingSeatsFileName, e);
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
             throw new RuntimeException(e);
         }

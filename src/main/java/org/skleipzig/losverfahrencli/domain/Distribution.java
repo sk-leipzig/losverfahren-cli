@@ -107,11 +107,17 @@ public class Distribution {
 
     }
 
-    private String listOpenProjectGroups(String delimiter) {
+    public List<RemainingSeats> getRemainingSeats() {
         return attendances.stream()
                 .filter(attendance -> attendance.getAvailableSlots() > 0)
-                .map(attendance -> attendance.getProjectGroup()
-                        .getProjectName() + "(Restplätze: " + attendance.getAvailableSlots() + ")")
+                .map(Attendance::getRemainingSeats)
+                .toList();
+    }
+
+    private String listOpenProjectGroups(String delimiter) {
+        return getRemainingSeats()
+                .stream()
+                .map(RemainingSeats::toString)
                 .collect(Collectors.joining(delimiter));
     }
 
