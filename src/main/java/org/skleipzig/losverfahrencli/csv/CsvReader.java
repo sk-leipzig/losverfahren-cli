@@ -18,8 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.springframework.util.StringUtils.collectionToDelimitedString;
-
 @ShellComponent
 @CommonsLog
 public class CsvReader {
@@ -27,14 +25,14 @@ public class CsvReader {
     static final String HINT_FILE_NAME = "Wenn die Datei nicht im aktuellen Ordner liegt, muss der komplette Pfad angegeben werden. Achtung: Sind Leerzeichen enthalten, muss der Parameter in \"\" eingeschlossen werden!";
     static final String HELP_TXT_PUPILS_FILE_NAME = "Name der CSV Datei mit der Schülerliste aus dem SAX. " + HINT_FILE_NAME;
     static final String HELP_TXT_PROJECTS_FILE_NAME = "Name der CSV Datei mit den Projektgruppen. " + HINT_FILE_NAME;
-    static final String HELP_TXT_VOTINGS_FILE_NAME = "Name der CSV Datei mit den Abstimmungsergebnissen. " + HINT_FILE_NAME;
+    static final String HELP_TXT_VOTINGS_FILE_NAME = "Name der CSV Datei mit den Umfrageergebnissen. " + HINT_FILE_NAME;
     static final String WARNING_NO_PROJECT_GROUPS = "Warnung: Es wurden keine Projektgruppen gefunden! Die Abstimmungsergebnisse können erst ausgewertet werden, wenn die Projektgruppen eingelesen wurden!";
     static final String WARNING_NO_PUPILS = "Warnung: Es wurden keine Schüler gefunden! Votings von Schülern, die nicht importiert wurden, werden ignoriert!";
 
     @Autowired
     private Context context;
 
-    @ShellMethod(key = "readPupils")
+    @ShellMethod(key = "readPupils", group = "import", value = "Schülerliste einlesen")
     public String readPupils(@ShellOption(help = HELP_TXT_PUPILS_FILE_NAME) String pupilsFileName,
                              @ShellOption(defaultValue = ",", help = "Trennzeichen") String separator) {
         try (Reader reader = Files.newBufferedReader(Paths.get(pupilsFileName))) {
@@ -49,13 +47,13 @@ public class CsvReader {
                     .toList();
             context.setPupils(pupils);
 
-            return "Schülerliste:\n" + collectionToDelimitedString(pupils, "\n", "\t", "");
+            return context.listPupils();
         } catch (IOException e) {
             return errorReadingFile(pupilsFileName, e);
         }
     }
 
-    @ShellMethod(key = "readProjects")
+    @ShellMethod(key = "readProjects", group = "import", value = "Projektgruppenliste einlesen")
     public String readProjects(@ShellOption(help = HELP_TXT_PROJECTS_FILE_NAME) String projectsFileName,
                                @ShellOption(defaultValue = ",", help = "Trennzeichen") String separator) {
         try (Reader reader = Files.newBufferedReader(Paths.get(projectsFileName))) {
@@ -70,13 +68,13 @@ public class CsvReader {
                     .toList();
             context.setProjectGroups(projects);
 
-            return "Projektliste:\n" + collectionToDelimitedString(projects, "\n", "\t", "");
+            return context.listProjectGroups();
         } catch (IOException e) {
             return errorReadingFile(projectsFileName, e);
         }
     }
 
-    @ShellMethod(key = "readVotings")
+    @ShellMethod(key = "readVotings", group = "import", value = "Umfrageergebnis einlesen")
     public String readVotings(@ShellOption(help = HELP_TXT_VOTINGS_FILE_NAME) String votingsFileName,
                               @ShellOption(defaultValue = ";", help = "Trennzeichen") String separator) {
         try (Reader reader = Files.newBufferedReader(Paths.get(votingsFileName))) {
@@ -99,7 +97,7 @@ public class CsvReader {
                 System.err.println(WARNING_NO_PROJECT_GROUPS);
             }
 
-            return "Schülerauswahl:\n" + collectionToDelimitedString(voteResults, "\n", "\t", "");
+            return context.listVotings();
         } catch (IOException e) {
             return errorReadingFile(votingsFileName, e);
         }

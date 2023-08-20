@@ -52,6 +52,9 @@ public class Attendance {
     }
 
     public String toString() {
-        return "Attendance[" + projectGroup.getProjectName() + ", " + pupilCollectionToString(attendees) + "]";
+        String attendeeString = attendees.stream()
+                .map(Pupil::toString)
+                .collect(Collectors.joining("\n\t"));
+        return "Teilnehmer der Projektgruppe " + projectGroup.getProjectName() + ":\n\t" + attendeeString;
     }
 }

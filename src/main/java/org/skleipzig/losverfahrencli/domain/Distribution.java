@@ -69,7 +69,7 @@ public class Distribution {
         log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
         for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
             log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
-            log.debug("Pupils to assign: " + result.listUnassignedPupils());
+            log.debug("Pupils to assign: " + result.listUnassignedPupils(";"));
             result = result.assignPupils(openProjectGroup, result.openVotes.stream().map(PupilVoteResult::getPupil).toList());
         }
         log.debug(result.createResultString());
@@ -96,17 +96,24 @@ public class Distribution {
         }
     }
 
-    private String createResultString() {
-        return "Result:\n" + collectionToDelimitedString(attendances, "\n", "\t", "") +
-                "\nStill unassigned: " + listUnassignedPupils() +
-                "\nOpen ProjectGroups: " + ProjectGroup.projectGroupNames(getOpenProjectGroups());
+    public String createResultString() {
+        return "Ergebnis:\n" + collectionToDelimitedString(attendances, "\n\n") +
+                "\n\n Nicht zugewiesene Schüler:\n\t" + listUnassignedPupils("\n\t") +
+                "\n\n Offene Projektgruppen: " + listOpenProjectGroups("\n\t");
 
     }
 
-    private String listUnassignedPupils() {
+    private String listOpenProjectGroups(String delimiter) {
+        return attendances.stream()
+                .filter(attendance -> attendance.getAvailableSlots() > 0)
+                .map(attendance -> attendance.getProjectGroup().getProjectName() + "(Restplätze: " + attendance.getAvailableSlots() + ")")
+                .collect(Collectors.joining(delimiter));
+    }
+
+    private String listUnassignedPupils(String delimiter) {
         return getOpenVotes().stream()
                 .map(PupilVoteResult::getPupil)
                 .map(Pupil::toString)
-                .collect(Collectors.joining(";"));
+                .collect(Collectors.joining(delimiter));
     }
 }
