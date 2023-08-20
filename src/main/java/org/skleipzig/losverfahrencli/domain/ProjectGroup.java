@@ -32,7 +32,9 @@ public class ProjectGroup {
 
     public static String projectGroupNames(Collection<ProjectGroup> projectGroups) {
         return projectGroups == null || projectGroups.isEmpty() ? "N/A" :
-                projectGroups.stream().map(ProjectGroup::getProjectName).collect(Collectors.joining(", "));
+                projectGroups.stream()
+                        .map(ProjectGroup::getProjectName)
+                        .collect(Collectors.joining(", "));
     }
 
     public String toString() {

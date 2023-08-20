@@ -35,7 +35,11 @@ public class Attendance {
         log.debug("trying to assign " + Pupil.pupilCollectionToString(pupils) + " to project group " + projectGroup.getProjectName());
         List<Pupil> newPupils = new ArrayList<>(pupils);
         Collections.shuffle(newPupils);
-        Set<Pupil> updatedAttendees = newPupils.stream().filter(pupil -> !attendees.contains(pupil)).filter(pupil -> pupil.canAttend(projectGroup)).limit(getAvailableSlots()).collect(Collectors.toSet());
+        Set<Pupil> updatedAttendees = newPupils.stream()
+                .filter(pupil -> !attendees.contains(pupil))
+                .filter(pupil -> pupil.canAttend(projectGroup))
+                .limit(getAvailableSlots())
+                .collect(Collectors.toSet());
         String newAttendeeNames = pupilCollectionToString(updatedAttendees);
         updatedAttendees.addAll(attendees);
         Attendance result = new Attendance(projectGroup, updatedAttendees);

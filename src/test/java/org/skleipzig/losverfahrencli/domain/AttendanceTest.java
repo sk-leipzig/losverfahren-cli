@@ -29,7 +29,8 @@ class AttendanceTest {
     @Test
     void doNotAssignMoreThanCapacity() {
         Attendance result = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS);
-        assertEquals(3, result.getAttendees().size());
+        assertEquals(3, result.getAttendees()
+                .size());
     }
 
     @Test

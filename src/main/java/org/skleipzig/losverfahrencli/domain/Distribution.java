@@ -52,7 +52,8 @@ public class Distribution {
                 log.debug("Processing ProjectGroup: " + openProjectGroup.getProjectName());
                 List<Pupil> pupilsToAssign = result.getOpenVotes()
                         .stream()
-                        .filter(pupilVoteResult -> pupilVoteResult.getPreference(priority).accepts(openProjectGroup))
+                        .filter(pupilVoteResult -> pupilVoteResult.getPreference(priority)
+                                .accepts(openProjectGroup))
                         .map(PupilVoteResult::getPupil)
                         .toList();
                 log.debug("Pupils to assign: " + pupilCollectionToString(pupilsToAssign));
@@ -70,7 +71,9 @@ public class Distribution {
         for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
             log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
             log.debug("Pupils to assign: " + result.listUnassignedPupils(";"));
-            result = result.assignPupils(openProjectGroup, result.openVotes.stream().map(PupilVoteResult::getPupil).toList());
+            result = result.assignPupils(openProjectGroup, result.openVotes.stream()
+                    .map(PupilVoteResult::getPupil)
+                    .toList());
         }
         log.debug(result.createResultString());
         return result;
@@ -86,7 +89,8 @@ public class Distribution {
             Attendance updatedAttendance = attendance.assignPupilsByVoteResult(pupils);
             List<PupilVoteResult> remainingVotes = new ArrayList<>(openVotes)
                     .stream()
-                    .filter(pupilVoteResult -> !updatedAttendance.getAttendees().contains(pupilVoteResult.getPupil()))
+                    .filter(pupilVoteResult -> !updatedAttendance.getAttendees()
+                            .contains(pupilVoteResult.getPupil()))
                     .toList();
             updatedAttendances.remove(attendance);
             updatedAttendances.add(updatedAttendance);
@@ -106,7 +110,8 @@ public class Distribution {
     private String listOpenProjectGroups(String delimiter) {
         return attendances.stream()
                 .filter(attendance -> attendance.getAvailableSlots() > 0)
-                .map(attendance -> attendance.getProjectGroup().getProjectName() + "(Restplätze: " + attendance.getAvailableSlots() + ")")
+                .map(attendance -> attendance.getProjectGroup()
+                        .getProjectName() + "(Restplätze: " + attendance.getAvailableSlots() + ")")
                 .collect(Collectors.joining(delimiter));
     }
 

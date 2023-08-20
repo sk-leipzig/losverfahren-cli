@@ -22,7 +22,8 @@ class PupilVoteResultDTOTest {
     @Test
     void canReadSample() throws URISyntaxException, IOException {
         Path path = Paths.get(
-                ClassLoader.getSystemResource("Einschreibung Projektwoche 2023.csv").toURI());
+                ClassLoader.getSystemResource("Einschreibung Projektwoche 2023.csv")
+                        .toURI());
         try (Reader reader = Files.newBufferedReader(path)) {
             CsvToBean<PupilVoteResultDTO> cb = new CsvToBeanBuilder<PupilVoteResultDTO>(reader)
                     .withType(PupilVoteResultDTO.class)

@@ -34,6 +34,11 @@ public class Pupil {
         return projectGroup.getMinForm() <= form && form <= projectGroup.getMaxForm();
     }
 
+    public PupilDTO toDTO() {
+        return new PupilDTO(foreName, name, Integer.toString(form), emailAddress);
+    }
+
+
     public String toString() {
         return foreName + " " + name + ", Klassenstufe " + form + ", (" + emailAddress + ")";
     }

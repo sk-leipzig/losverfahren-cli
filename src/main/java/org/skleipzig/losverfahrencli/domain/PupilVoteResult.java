@@ -27,11 +27,14 @@ public class PupilVoteResult {
      * Liefert nur dann ein Ergebnis, wenn der Schüler in der Schülerliste ist. Abstimmung für ein unbekanntes Projekt führt zu {@link ProjectGroupPreference#none(int)}.
      */
     public static Optional<PupilVoteResult> fromDTO(PupilVoteResultDTO pupilVoteResultDTO, List<Pupil> pupils, List<ProjectGroup> availableProjectGroups) {
-        return Pupil.selectByEmail(pupils, pupilVoteResultDTO.getLogin()).map(pupil -> new PupilVoteResult(pupil, Map.of(1, createPreference(1, pupilVoteResultDTO.getPrimaryChoice(), availableProjectGroups), 2, createPreference(2, pupilVoteResultDTO.getSecondaryChoice(), availableProjectGroups), 3, createPreference(3, pupilVoteResultDTO.getTertiaryChoice(), availableProjectGroups))));
+        return Pupil.selectByEmail(pupils, pupilVoteResultDTO.getLogin())
+                .map(pupil -> new PupilVoteResult(pupil, Map.of(1, createPreference(1, pupilVoteResultDTO.getPrimaryChoice(), availableProjectGroups), 2, createPreference(2, pupilVoteResultDTO.getSecondaryChoice(), availableProjectGroups), 3, createPreference(3, pupilVoteResultDTO.getTertiaryChoice(), availableProjectGroups))));
     }
 
     private static ProjectGroupPreference createPreference(int priority, String projectName, List<ProjectGroup> availableProjectGroups) {
-        return ProjectGroup.selectByName(availableProjectGroups, projectName).map(projectGroup -> ProjectGroupPreference.forProjectGroup(priority, projectGroup)).orElse(ProjectGroupPreference.none(priority));
+        return ProjectGroup.selectByName(availableProjectGroups, projectName)
+                .map(projectGroup -> ProjectGroupPreference.forProjectGroup(priority, projectGroup))
+                .orElse(ProjectGroupPreference.none(priority));
     }
 
     public String toString() {

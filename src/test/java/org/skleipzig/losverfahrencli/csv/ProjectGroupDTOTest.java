@@ -25,7 +25,8 @@ class ProjectGroupDTOTest {
     @Test
     void canReadSample() throws URISyntaxException, IOException {
         Path path = Paths.get(
-                ClassLoader.getSystemResource("Projektgruppen Projektwoche 2023.csv").toURI());
+                ClassLoader.getSystemResource("Projektgruppen Projektwoche 2023.csv")
+                        .toURI());
         try (Reader reader = Files.newBufferedReader(path)) {
             CsvToBean<ProjectGroupDTO> cb = new CsvToBeanBuilder<ProjectGroupDTO>(reader)
                     .withType(ProjectGroupDTO.class)
