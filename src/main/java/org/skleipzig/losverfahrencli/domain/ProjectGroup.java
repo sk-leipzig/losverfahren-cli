@@ -21,7 +21,16 @@ public class ProjectGroup {
 
     public static ProjectGroup fromDTO(ProjectGroupDTO projectGroupDTO) {
         return new ProjectGroup(projectGroupDTO.getProjectName(), projectGroupDTO.getMinForm(),
-                projectGroupDTO.getMaxForm(), Integer.parseInt(projectGroupDTO.getCapacity()));
+                projectGroupDTO.getMaxForm(), parseCapacity(projectGroupDTO.getCapacity()));
+    }
+
+    private static int parseCapacity(String capacityString) {
+        try {
+            return Integer.parseInt(capacityString);
+        } catch (NumberFormatException e) {
+            System.err.println("Ungültige Angabe der Kapazität für Projektgruppe: " + capacityString);
+        }
+        return 0;
     }
 
     public static Optional<ProjectGroup> selectByName(List<ProjectGroup> projectGroups, String projectName) {

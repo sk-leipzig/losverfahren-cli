@@ -35,9 +35,16 @@ public class PupilAssignmentDTO {
     }
 
     public static List<PupilAssignmentDTO> fromDistribution(Distribution distribution) {
-        return distribution.getAttendances()
+        Stream<PupilAssignmentDTO> assignedPupils = distribution.getAttendances()
                 .stream()
-                .flatMap(PupilAssignmentDTO::streamDTOs)
+                .flatMap(PupilAssignmentDTO::streamDTOs);
+        Stream<PupilAssignmentDTO> unassignedPupils = distribution.getOpenVotes()
+                .stream()
+                .map(pupilVoteResult -> pupilVoteResult.getPupil()
+                        .toDTO())
+                .map(pupilDTO -> create(pupilDTO, "nicht zugeordnet"));
+
+        return Stream.concat(assignedPupils, unassignedPupils)
                 .toList();
     }
 

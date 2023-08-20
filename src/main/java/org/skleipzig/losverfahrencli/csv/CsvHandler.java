@@ -7,6 +7,7 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.io.input.BOMInputStream;
 import org.skleipzig.losverfahrencli.Context;
 import org.skleipzig.losverfahrencli.domain.ProjectGroup;
 import org.skleipzig.losverfahrencli.domain.Pupil;
@@ -17,13 +18,13 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.StringUtils;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @ShellComponent
 @CommonsLog
@@ -41,8 +42,8 @@ public class CsvHandler {
     private Context context;
 
     @ShellMethod(key = "readPupils", group = "import", value = "Schülerliste einlesen")
-    public String readPupils(@ShellOption(help = HELP_TXT_PUPILS_FILE_NAME) String pupilsFileName, @ShellOption(defaultValue = ",", help = "Trennzeichen") String separator) {
-        try (Reader reader = Files.newBufferedReader(Paths.get(pupilsFileName))) {
+    public String readPupils(@ShellOption(help = HELP_TXT_PUPILS_FILE_NAME) String pupilsFileName, @ShellOption(defaultValue = ";", help = "Trennzeichen") String separator) {
+        try (Reader reader = getReader(pupilsFileName)) {
             CsvToBean<PupilDTO> cb = new CsvToBeanBuilder<PupilDTO>(reader).withType(PupilDTO.class)
                     .withSeparator(separator.charAt(0))
                     .build();
@@ -50,6 +51,7 @@ public class CsvHandler {
             List<Pupil> pupils = cb.parse()
                     .stream()
                     .map(Pupil::fromDTO)
+                    .flatMap(Optional::stream)
                     .toList();
             context.setPupils(pupils);
 
@@ -60,8 +62,8 @@ public class CsvHandler {
     }
 
     @ShellMethod(key = "readProjects", group = "import", value = "Projektgruppenliste einlesen")
-    public String readProjects(@ShellOption(help = HELP_TXT_PROJECTS_FILE_NAME) String projectsFileName, @ShellOption(defaultValue = ",", help = "Trennzeichen") String separator) {
-        try (Reader reader = Files.newBufferedReader(Paths.get(projectsFileName))) {
+    public String readProjects(@ShellOption(help = HELP_TXT_PROJECTS_FILE_NAME) String projectsFileName, @ShellOption(defaultValue = ";", help = "Trennzeichen") String separator) {
+        try (Reader reader = getReader(projectsFileName)) {
             CsvToBean<ProjectGroupDTO> cb = new CsvToBeanBuilder<ProjectGroupDTO>(reader).withType(ProjectGroupDTO.class)
                     .withSeparator(separator.charAt(0))
                     .build();
@@ -80,7 +82,7 @@ public class CsvHandler {
 
     @ShellMethod(key = "readVotings", group = "import", value = "Umfrageergebnis einlesen")
     public String readVotings(@ShellOption(help = HELP_TXT_VOTINGS_FILE_NAME) String votingsFileName, @ShellOption(defaultValue = ";", help = "Trennzeichen") String separator) {
-        try (Reader reader = Files.newBufferedReader(Paths.get(votingsFileName))) {
+        try (Reader reader = getReader(votingsFileName)) {
             CsvToBean<PupilVoteResultDTO> cb = new CsvToBeanBuilder<PupilVoteResultDTO>(reader).withType(PupilVoteResultDTO.class)
                     .withSeparator(separator.charAt(0))
                     .build();
@@ -133,5 +135,10 @@ public class CsvHandler {
     private static String errorReadingFile(String projectsFileName, IOException e) {
         log.error("Error reading file " + projectsFileName, e);
         return "Konnte " + projectsFileName + " nicht einlesen: Datei nicht gefunden oder nicht lesbar.";
+    }
+
+    private static BufferedReader getReader(String fileName) throws IOException {
+        final BOMInputStream inputStream = new BOMInputStream(Files.newInputStream(Paths.get(fileName)));
+        return new BufferedReader(new InputStreamReader(inputStream, UTF_8));
     }
 }

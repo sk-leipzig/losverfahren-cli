@@ -16,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PupilDTOTest {
 
-    static final PupilDTO CORINA = new PupilDTO("Corina", "Küttner", "10", "corina@goethegym-leipzig.lernsax.de");
-    static final PupilDTO STEFAN = new PupilDTO("Stefan", "Küttner", "11", "stefan@goethegym-leipzig.lernsax.de");
-    static final PupilDTO ANNA = new PupilDTO("Anna", "Küttner", "9", "anna@goethegym-leipzig.lernsax.de");
+    static final PupilDTO CORINA = new PupilDTO("Corina", "Küttner", "KL10", "corina@goethegym-leipzig.lernsax.de");
+    static final PupilDTO STEFAN = new PupilDTO("Stefan", "Küttner", "KL11", "stefan@goethegym-leipzig.lernsax.de");
+    static final PupilDTO ANNA = new PupilDTO("Anna", "Küttner", "KL9", "anna@goethegym-leipzig.lernsax.de");
 
     @Test
     void canReadSample() throws URISyntaxException, IOException {

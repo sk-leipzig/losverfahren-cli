@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvBindByName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 
 import java.util.Optional;
 
@@ -30,11 +31,12 @@ public class ProjectGroupDTO {
     }
 
     private Optional<Integer> formsToken(int index) {
-        return Optional.of(forms)
+        return Optional.ofNullable(forms)
                 .map(formsString -> formsString.split("-"))
                 .filter(tokens -> tokens.length > index)
                 .map(tokens -> tokens[index])
                 .map(String::trim)
+                .filter(Strings::isNotEmpty)
                 .map(Integer::parseInt);
     }
 
