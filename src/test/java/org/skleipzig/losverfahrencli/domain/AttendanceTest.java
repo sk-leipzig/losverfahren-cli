@@ -22,25 +22,25 @@ class AttendanceTest {
 
     @Test
     void doNotAssignLumpi() {
-        Attendance result = createAttendance(testProject).assignPupils(List.of(STEFAN, LUMPI));
+        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(List.of(STEFAN, LUMPI));
         assertThat(result.getAttendees(), contains(STEFAN));
     }
 
     @Test
     void doNotAssignMoreThanCapacity() {
-        Attendance result = createAttendance(testProject).assignPupils(ALL_PUPILS);
+        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS);
         assertEquals(3, result.getAttendees().size());
     }
 
     @Test
     void doNotDoubleAssignPupil() {
-        Attendance result = createAttendance(testProject).assignPupils(List.of(STEFAN, STEFAN, STEFAN));
+        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(List.of(STEFAN, STEFAN, STEFAN));
         assertEquals(2, result.getAvailableSlots());
     }
 
     @Test
     void assignDifferentPupils() {
-        long numberOfDistinctAttendees = createAttendance(testProject).assignPupils(ALL_PUPILS)
+        long numberOfDistinctAttendees = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS)
                 .getAttendees()
                 .stream()
                 .distinct()
@@ -50,7 +50,7 @@ class AttendanceTest {
 
     @Test
     void noAvailableSlotsAfterAssignment() {
-        Attendance result = createAttendance(testProject).assignPupils(ALL_PUPILS);
+        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS);
         assertEquals(0, result.getAvailableSlots());
     }
 

@@ -4,28 +4,27 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
-import org.skleipzig.losverfahrencli.domain.Pupil.ProjectGroupPreference;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static org.skleipzig.losverfahrencli.domain.Pupil.PREFERENCE_DEFINITIONS;
+import static org.skleipzig.losverfahrencli.domain.Pupil.pupilCollectionToString;
 import static org.springframework.util.StringUtils.collectionToDelimitedString;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @CommonsLog
 public class Distribution {
-    private final List<Pupil> unassignedPupils;
+    private final List<PupilVoteResult> openVotes;
     private final List<Attendance> attendances;
 
-    public static Distribution create(List<ProjectGroup> projectGroups, List<Pupil> pupils) {
-        List<Pupil> unassignedPupils = new ArrayList<>(pupils);
+    public static Distribution create(List<ProjectGroup> projectGroups, List<PupilVoteResult> voteResults) {
+        List<PupilVoteResult> openVotes = new ArrayList<>(voteResults);
         List<Attendance> attendances = projectGroups.stream()
                 .map(Attendance::createAttendance)
                 .toList();
-        return new Distribution(unassignedPupils, attendances);
+        return new Distribution(openVotes, attendances);
     }
 
     public List<ProjectGroup> getOpenProjectGroups() {
@@ -46,15 +45,17 @@ public class Distribution {
     private Distribution assignByPreference() {
         log.debug("assignByPreference");
         Distribution result = this;
-        for (Function<Pupil, ProjectGroupPreference> preferenceDefinition : PREFERENCE_DEFINITIONS) {
-            log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
+        for (int i = 1; i <= PupilVoteResult.MAX_VOTES; i++) {
+            log.debug("Processing " + i + ". priority votes for open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
             for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
-                log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
-                List<Pupil> pupilsToAssign = result.getUnassignedPupils()
+                final int priority = i;
+                log.debug("Processing ProjectGroup: " + openProjectGroup.getProjectName());
+                List<Pupil> pupilsToAssign = result.getOpenVotes()
                         .stream()
-                        .filter(pupil -> preferenceDefinition.apply(pupil).test(openProjectGroup))
+                        .filter(pupilVoteResult -> pupilVoteResult.getPreference(priority).accepts(openProjectGroup))
+                        .map(PupilVoteResult::getPupil)
                         .toList();
-                log.debug("Pupils to assign: " + Pupil.pupilCollectionToString(pupilsToAssign));
+                log.debug("Pupils to assign: " + pupilCollectionToString(pupilsToAssign));
                 result = result.assignPupils(openProjectGroup, pupilsToAssign);
             }
         }
@@ -68,8 +69,8 @@ public class Distribution {
         log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
         for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
             log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
-            log.debug("Pupils to assign: " + result.unassignedPupils);
-            result = result.assignPupils(openProjectGroup, result.unassignedPupils);
+            log.debug("Pupils to assign: " + result.listUnassignedPupils());
+            result = result.assignPupils(openProjectGroup, result.openVotes.stream().map(PupilVoteResult::getPupil).toList());
         }
         log.debug(result.createResultString());
         return result;
@@ -82,12 +83,14 @@ public class Distribution {
                 .orElse(null);
         if (attendance != null && pupils != null && !pupils.isEmpty()) {
             ArrayList<Attendance> updatedAttendances = new ArrayList<>(attendances);
-            Attendance updatedAttendance = attendance.assignPupils(pupils);
-            List<Pupil> remainingUnassignedPupils = new ArrayList<>(unassignedPupils);
-            remainingUnassignedPupils.removeAll(updatedAttendance.getAttendees());
+            Attendance updatedAttendance = attendance.assignPupilsByVoteResult(pupils);
+            List<PupilVoteResult> remainingVotes = new ArrayList<>(openVotes)
+                    .stream()
+                    .filter(pupilVoteResult -> !updatedAttendance.getAttendees().contains(pupilVoteResult.getPupil()))
+                    .toList();
             updatedAttendances.remove(attendance);
             updatedAttendances.add(updatedAttendance);
-            return new Distribution(remainingUnassignedPupils, updatedAttendances);
+            return new Distribution(remainingVotes, updatedAttendances);
         } else {
             return this;
         }
@@ -95,8 +98,15 @@ public class Distribution {
 
     private String createResultString() {
         return "Result:\n" + collectionToDelimitedString(attendances, "\n", "\t", "") +
-                "\nStill unassigned:" + Pupil.pupilCollectionToString(getUnassignedPupils()) +
+                "\nStill unassigned: " + listUnassignedPupils() +
                 "\nOpen ProjectGroups: " + ProjectGroup.projectGroupNames(getOpenProjectGroups());
 
+    }
+
+    private String listUnassignedPupils() {
+        return getOpenVotes().stream()
+                .map(PupilVoteResult::getPupil)
+                .map(Pupil::toString)
+                .collect(Collectors.joining(";"));
     }
 }

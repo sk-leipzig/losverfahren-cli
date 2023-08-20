@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProjectGroupDTOTest {
 
+    private static final ProjectGroupDTO GOETHE_TIME = new ProjectGroupDTO("Goethe-Time", "8-11", "15");
     private static final ProjectGroupDTO GOETHE_IN_LEIPZIG = new ProjectGroupDTO("Goethe in Leipzig", "8-11", "40");
     private static final ProjectGroupDTO GOETHE_ALS_SPIELER = new ProjectGroupDTO("Goethe als Spieler", "6-11", "75");
     private static final ProjectGroupDTO WANDERN_WEITET = new ProjectGroupDTO("Wandern weitet den Blick", "7-9", "25");
@@ -31,7 +32,7 @@ class ProjectGroupDTOTest {
                     .build();
 
             List<ProjectGroupDTO> actualProjects = cb.parse();
-            assertEquals(List.of(GOETHE_IN_LEIPZIG, GOETHE_ALS_SPIELER, WANDERN_WEITET, GOETHE_NACH_INNEN), actualProjects);
+            assertEquals(List.of(GOETHE_TIME, GOETHE_IN_LEIPZIG, GOETHE_ALS_SPIELER, WANDERN_WEITET, GOETHE_NACH_INNEN), actualProjects);
         }
     }
 

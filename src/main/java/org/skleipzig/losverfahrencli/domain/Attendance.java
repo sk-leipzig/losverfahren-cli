@@ -31,22 +31,18 @@ public class Attendance {
     /**
      * Weist dem Projekt so viele Schüler aus der Liste zu, wie möglich. Sind es zu viele Schüler, dann erfolgt die Auswahl zufällig.
      */
-    public Attendance assignPupils(Collection<Pupil> pupils) {
+    public Attendance assignPupilsByVoteResult(Collection<Pupil> pupils) {
+        log.debug("trying to assign " + Pupil.pupilCollectionToString(pupils) + " to project group " + projectGroup.getProjectName());
         List<Pupil> newPupils = new ArrayList<>(pupils);
         Collections.shuffle(newPupils);
-        Set<Pupil> updatedAttendees = newPupils.stream()
-                .filter(pupil -> !attendees.contains(pupil))
-                .filter(pupil -> pupil.canAttend(projectGroup))
-                .limit(getAvailableSlots())
-                .collect(Collectors.toSet());
+        Set<Pupil> updatedAttendees = newPupils.stream().filter(pupil -> !attendees.contains(pupil)).filter(pupil -> pupil.canAttend(projectGroup)).limit(getAvailableSlots()).collect(Collectors.toSet());
         String newAttendeeNames = pupilCollectionToString(updatedAttendees);
         updatedAttendees.addAll(attendees);
         Attendance result = new Attendance(projectGroup, updatedAttendees);
         if (log.isDebugEnabled()) {
             HashSet<Pupil> unAssignedPupils = new HashSet<>(pupils);
             unAssignedPupils.removeAll(updatedAttendees);
-            log.debug(String.format("Assigned %s to project %s. Remaining capacity: %d. Pupils not assigned: %s",
-                    newAttendeeNames, projectGroup.getProjectName(), result.getAvailableSlots(), pupilCollectionToString(unAssignedPupils)));
+            log.debug(String.format("Assigned %s to project %s. Remaining capacity: %d. Pupils not assigned: %s", newAttendeeNames, projectGroup.getProjectName(), result.getAvailableSlots(), pupilCollectionToString(unAssignedPupils)));
         }
         return result;
     }
@@ -56,6 +52,6 @@ public class Attendance {
     }
 
     public String toString() {
-        return "Attendance[" + projectGroup.getProjectName() + ", " + Pupil.pupilCollectionToString(attendees) + "]";
+        return "Attendance[" + projectGroup.getProjectName() + ", " + pupilCollectionToString(attendees) + "]";
     }
 }

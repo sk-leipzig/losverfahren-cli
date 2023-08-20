@@ -17,6 +17,16 @@ class DistributionTest {
     private ProjectGroup goetheNiest;
     private ProjectGroup ohneGoethe;
 
+    private static final PupilVoteResult V_STEFAN = createVoteResult(STEFAN, GOETHE_DENKT, GOETHE_NIEST, OHNE_GOETHE);
+    private static final PupilVoteResult V_FRITZ = createVoteResult(FRITZ, GOETHE_NIEST, GOETHE_NIEST, GOETHE_NIEST);
+    private static final PupilVoteResult V_MONI = createVoteResult(MONI, GOETHE_NIEST);
+    private static final PupilVoteResult V_FRANZI = createVoteResult(FRANZI, GOETHE_DENKT, GOETHE_NIEST);
+    private static final PupilVoteResult V_CHILLER = createVoteResult(CHILLER);
+    private static final PupilVoteResult V_CARL = createVoteResult(CARL);
+    private static final PupilVoteResult V_LUMPI = createVoteResult(LUMPI, OHNE_GOETHE);
+
+    private static final List<PupilVoteResult> ALL_VOTINGS = List.of(V_STEFAN, V_FRITZ, V_MONI, V_FRANZI, V_CHILLER, V_CARL, V_LUMPI);
+
     @BeforeEach
     void setUp() {
         goetheDenkt = new ProjectGroup(GOETHE_DENKT, 6, 7, 3);
@@ -26,7 +36,7 @@ class DistributionTest {
 
     @Test
     void allPupilsAssigned() {
-        List<Attendance> attendances = Distribution.create(List.of(goetheNiest, goetheDenkt, ohneGoethe), ALL_PUPILS)
+        List<Attendance> attendances = Distribution.create(List.of(goetheNiest, goetheDenkt, ohneGoethe), ALL_VOTINGS)
                 .assignAllPupils()
                 .getAttendances();
         assertThat("Testsetup error", ALL_PUPILS, containsInAnyOrder(STEFAN, FRITZ, MONI, FRANZI, CHILLER, CARL, LUMPI));

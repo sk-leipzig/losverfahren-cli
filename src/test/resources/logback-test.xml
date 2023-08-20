@@ -9,9 +9,9 @@
 
     <!-- LOG everything at INFO level -->
     <root level="info">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="org.skleipzig" level="trace"/>
+    <logger name="org.skleipzig" level="debug"/>
 
 </configuration>

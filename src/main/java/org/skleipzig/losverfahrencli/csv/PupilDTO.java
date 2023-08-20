@@ -22,5 +22,4 @@ public class PupilDTO {
     @CsvBindByName(column = "Email")
     private String emailAddress;
 
-
 }
