@@ -14,12 +14,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.skleipzig.losverfahrencli.csv.PupilDTOTest.*;
+import static org.skleipzig.losverfahrencli.domain.AssignmentType.*;
 
 class PupilAssignmentDTOTest {
 
-    static final PupilAssignmentDTO CORINA_ASSIGNMENT = PupilAssignmentDTO.create(CORINA, "Goethe-Time");
-    static final PupilAssignmentDTO STEFAN_ASSIGNMENT = PupilAssignmentDTO.create(STEFAN, "Goethe als Spieler");
-    static final PupilAssignmentDTO ANNA_ASSIGNMENT = PupilAssignmentDTO.create(ANNA, "Goethe-Time");
+    static final PupilAssignmentDTO CORINA_ASSIGNMENT = PupilAssignmentDTO.create(CORINA, "Goethe-Time", Erstwunsch);
+    static final PupilAssignmentDTO STEFAN_ASSIGNMENT = PupilAssignmentDTO.create(STEFAN, "Goethe als Spieler", Zweitwunsch);
+    static final PupilAssignmentDTO ANNA_ASSIGNMENT = PupilAssignmentDTO.create(ANNA, "Goethe-Time", Zugelost);
 
     @Test
     void canReadSample() throws URISyntaxException, IOException {

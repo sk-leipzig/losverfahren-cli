@@ -55,7 +55,7 @@ class DistributionTest {
     private void assertPupilAssigned(List<Attendance> attendances, Pupil pupil) {
         assertTrue(attendances.stream()
                         .anyMatch(attendance -> attendance.getAttendees()
-                                .contains(pupil)),
+                                .containsValue(pupil)),
                 pupil + " not assigned!");
     }
 }

@@ -27,7 +27,7 @@ public class ProjectGroupDTO {
     }
 
     public int getMaxForm() {
-        return formsToken(1).orElse(0);
+        return formsToken(1).orElse(getMinForm());
     }
 
     private Optional<Integer> formsToken(int index) {

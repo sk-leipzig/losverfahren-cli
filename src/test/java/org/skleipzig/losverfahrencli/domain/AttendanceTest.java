@@ -8,6 +8,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.skleipzig.losverfahrencli.domain.AssignmentType.Erstwunsch;
 import static org.skleipzig.losverfahrencli.domain.Attendance.createAttendance;
 import static org.skleipzig.losverfahrencli.domain.TestObjects.*;
 
@@ -22,27 +23,29 @@ class AttendanceTest {
 
     @Test
     void doNotAssignLumpi() {
-        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(List.of(STEFAN, LUMPI));
-        assertThat(result.getAttendees(), contains(STEFAN));
+        Attendance result = createAttendance(testProject).assignPupils(List.of(STEFAN, LUMPI), Erstwunsch);
+        assertThat(result.getAttendees()
+                .keySet(), contains(STEFAN));
     }
 
     @Test
     void doNotAssignMoreThanCapacity() {
-        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS);
+        Attendance result = createAttendance(testProject).assignPupils(ALL_PUPILS, Erstwunsch);
         assertEquals(3, result.getAttendees()
                 .size());
     }
 
     @Test
     void doNotDoubleAssignPupil() {
-        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(List.of(STEFAN, STEFAN, STEFAN));
+        Attendance result = createAttendance(testProject).assignPupils(List.of(STEFAN, STEFAN, STEFAN), Erstwunsch);
         assertEquals(2, result.getAvailableSlots());
     }
 
     @Test
     void assignDifferentPupils() {
-        long numberOfDistinctAttendees = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS)
+        long numberOfDistinctAttendees = createAttendance(testProject).assignPupils(ALL_PUPILS, Erstwunsch)
                 .getAttendees()
+                .keySet()
                 .stream()
                 .distinct()
                 .count();
@@ -51,7 +54,7 @@ class AttendanceTest {
 
     @Test
     void noAvailableSlotsAfterAssignment() {
-        Attendance result = createAttendance(testProject).assignPupilsByVoteResult(ALL_PUPILS);
+        Attendance result = createAttendance(testProject).assignPupils(ALL_PUPILS, Erstwunsch);
         assertEquals(0, result.getAvailableSlots());
     }
 

@@ -28,6 +28,7 @@ public class PupilVoteResult {
      */
     public static Optional<PupilVoteResult> fromDTO(PupilVoteResultDTO pupilVoteResultDTO, List<Pupil> pupils, List<ProjectGroup> availableProjectGroups) {
         return Pupil.selectByEmail(pupils, pupilVoteResultDTO.getLogin())
+                .or(() -> Pupil.fromPupilVoteResultDTO(pupilVoteResultDTO))
                 .map(pupil -> new PupilVoteResult(pupil, Map.of(1, createPreference(1, pupilVoteResultDTO.getPrimaryChoice(), availableProjectGroups), 2, createPreference(2, pupilVoteResultDTO.getSecondaryChoice(), availableProjectGroups), 3, createPreference(3, pupilVoteResultDTO.getTertiaryChoice(), availableProjectGroups))));
     }
 

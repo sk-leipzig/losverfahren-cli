@@ -2,6 +2,7 @@ package org.skleipzig.losverfahrencli.domain;
 
 import lombok.Data;
 import org.skleipzig.losverfahrencli.csv.PupilDTO;
+import org.skleipzig.losverfahrencli.csv.PupilVoteResultDTO;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +32,14 @@ public class Pupil {
         return Optional.of(new Pupil(pupilDTO.getForeName(), pupilDTO.getName(), parseForm(pupilDTO.getForm()), pupilDTO.getEmailAddress()));
     }
 
+    public static Optional<Pupil> fromPupilVoteResultDTO(PupilVoteResultDTO pupilVoteResultDTO) {
+        if (isEmpty(pupilVoteResultDTO.getForm()) || isEmpty(pupilVoteResultDTO.getLogin())) {
+            System.err.println("Ungültige Schülerdaten (ignoriert): " + pupilVoteResultDTO);
+            return Optional.empty();
+        }
+        return Optional.of(new Pupil("N/A", "N/A", parseForm(pupilVoteResultDTO.getForm()), pupilVoteResultDTO.getLogin()));
+    }
+
     private static int parseForm(String formString) {
         if (isEmpty(formString)) {
             return 0;
@@ -39,7 +48,7 @@ public class Pupil {
         } else if (formString.equalsIgnoreCase("VKA")) {
             return VKA_FORM;
         } else
-            throw new IllegalArgumentException("Could not read form: " + formString + ". Supported patterns: KL<number> and 'VKA'.");
+            return Integer.parseInt(formString.trim());
     }
 
     public static Optional<Pupil> selectByEmail(List<Pupil> pupils, String emailAddress) {

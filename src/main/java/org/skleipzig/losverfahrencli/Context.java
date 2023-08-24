@@ -30,17 +30,17 @@ public class Context {
 
     @ShellMethod(key = "listPupils", group = "context", value = "Schülerliste anzeigen")
     public String listPupils() {
-        return "Schülerliste:\n" + collectionToDelimitedString(pupils, "\n", "\t", "");
+        return "Schülerliste:\n" + collectionToDelimitedString(pupils, "\n", "\t", "") + "\n" + pupils.size() + " Schüler\n";
     }
 
     @ShellMethod(key = "listProjectGroups", group = "context", value = "Projektgruppen anzeigen")
     public String listProjectGroups() {
-        return "Projektgruppen:\n" + collectionToDelimitedString(projectGroups, "\n", "\t", "");
+        return "Projektgruppen:\n" + collectionToDelimitedString(projectGroups, "\n", "\t", "") + "\n" + projectGroups.size() + " Projektgruppen\n";
     }
 
     @ShellMethod(key = "listVotings", group = "context", value = "Umfrageergebisse anzeigen")
     public String listVotings() {
-        return "Schülerauswahl:\n" + collectionToDelimitedString(voteResults, "\n", "\t", "");
+        return "Schülerauswahl:\n" + collectionToDelimitedString(voteResults, "\n", "\t", "") + "\n" + voteResults.size() + " Abstimmungsergebnisse\n";
     }
 
     @ShellMethod(key = "listAll", group = "context", value = "Alle gespeicherten Daten anzeigen")

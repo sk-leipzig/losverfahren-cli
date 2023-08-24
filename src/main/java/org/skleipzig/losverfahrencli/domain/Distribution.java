@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.skleipzig.losverfahrencli.domain.AssignmentType.Zugelost;
 import static org.skleipzig.losverfahrencli.domain.Pupil.pupilCollectionToString;
 import static org.springframework.util.StringUtils.collectionToDelimitedString;
 
@@ -20,11 +21,10 @@ public class Distribution {
     private final List<Attendance> attendances;
 
     public static Distribution create(List<ProjectGroup> projectGroups, List<PupilVoteResult> voteResults) {
-        List<PupilVoteResult> openVotes = new ArrayList<>(voteResults);
         List<Attendance> attendances = projectGroups.stream()
                 .map(Attendance::createAttendance)
                 .toList();
-        return new Distribution(openVotes, attendances);
+        return new Distribution(new ArrayList<>(voteResults), attendances);
     }
 
     public List<ProjectGroup> getOpenProjectGroups() {
@@ -46,7 +46,8 @@ public class Distribution {
         log.debug("assignByPreference");
         Distribution result = this;
         for (int i = 1; i <= PupilVoteResult.MAX_VOTES; i++) {
-            log.debug("Processing " + i + ". priority votes for open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
+            AssignmentType assignmentType = AssignmentType.byOrdinal(i - 1);
+            log.debug("Processing " + assignmentType + " votes for open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
             for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
                 final int priority = i;
                 log.debug("Processing ProjectGroup: " + openProjectGroup.getProjectName());
@@ -57,7 +58,7 @@ public class Distribution {
                         .map(PupilVoteResult::getPupil)
                         .toList();
                 log.debug("Pupils to assign: " + pupilCollectionToString(pupilsToAssign));
-                result = result.assignPupils(openProjectGroup, pupilsToAssign);
+                result = result.assignPupils(openProjectGroup, pupilsToAssign, assignmentType);
             }
         }
         log.debug(result.createResultString());
@@ -68,29 +69,30 @@ public class Distribution {
         log.debug("assignRemainingPupils");
         Distribution result = this;
         log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
-        for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
-            log.debug("Assigning to ProjectGroup: " + openProjectGroup.getProjectName());
+        for (ProjectGroup projectGroup : result.getOpenProjectGroups()) {
+            log.debug("Assigning to ProjectGroup: " + projectGroup.getProjectName());
             log.debug("Pupils to assign: " + result.listUnassignedPupils(";"));
-            result = result.assignPupils(openProjectGroup, result.openVotes.stream()
+            List<Pupil> pupils = result.openVotes.stream()
                     .map(PupilVoteResult::getPupil)
-                    .toList());
+                    .toList();
+            result = result.assignPupils(projectGroup, pupils, Zugelost);
         }
         log.debug(result.createResultString());
         return result;
     }
 
-    private Distribution assignPupils(ProjectGroup projectGroup, List<Pupil> pupils) {
+    private Distribution assignPupils(ProjectGroup projectGroup, List<Pupil> pupils, AssignmentType assignmentType) {
         Attendance attendance = attendances.stream()
                 .filter(a -> a.hasProjectGroup(projectGroup))
                 .findAny()
                 .orElse(null);
         if (attendance != null && pupils != null && !pupils.isEmpty()) {
             ArrayList<Attendance> updatedAttendances = new ArrayList<>(attendances);
-            Attendance updatedAttendance = attendance.assignPupilsByVoteResult(pupils);
+            Attendance updatedAttendance = attendance.assignPupils(pupils, assignmentType);
             List<PupilVoteResult> remainingVotes = new ArrayList<>(openVotes)
                     .stream()
                     .filter(pupilVoteResult -> !updatedAttendance.getAttendees()
-                            .contains(pupilVoteResult.getPupil()))
+                            .containsKey(pupilVoteResult.getPupil()))
                     .toList();
             updatedAttendances.remove(attendance);
             updatedAttendances.add(updatedAttendance);
