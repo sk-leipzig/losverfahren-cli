@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.skleipzig.losverfahrencli.domain.AssignmentType.Zugelost;
@@ -34,6 +33,13 @@ public class Distribution {
                 .toList();
     }
 
+    public Optional<ProjectGroup> getOpenProjectGroupWithMostOpenSlots() {
+        return attendances.stream()
+                .filter(attendance -> attendance.getAvailableSlots() > 0)
+                .max(Comparator.comparingInt(Attendance::getAvailableSlots))
+                .map(Attendance::getProjectGroup);
+    }
+
     /**
      * Weist alle freien Schüler nach ihrer Präferenz zu einem Projekt zu, beginnend mit dem Erstwunsch.
      * Wenn keine Zuweisung anhand Präferenz mehr möglich ist, wird ohne Berücksichtigung der Präferenzen weiter verteilt.
@@ -51,12 +57,13 @@ public class Distribution {
             for (ProjectGroup openProjectGroup : result.getOpenProjectGroups()) {
                 final int priority = i;
                 log.debug("Processing ProjectGroup: " + openProjectGroup.getProjectName());
-                List<Pupil> pupilsToAssign = result.getOpenVotes()
+                List<Pupil> pupilsToAssign = new ArrayList<>(result.getOpenVotes()
                         .stream()
                         .filter(pupilVoteResult -> pupilVoteResult.getPreference(priority)
                                 .accepts(openProjectGroup))
                         .map(PupilVoteResult::getPupil)
-                        .toList();
+                        .toList());
+                Collections.shuffle(pupilsToAssign);
                 log.debug("Pupils to assign: " + pupilCollectionToString(pupilsToAssign));
                 result = result.assignPupils(openProjectGroup, pupilsToAssign, assignmentType);
             }
@@ -69,13 +76,19 @@ public class Distribution {
         log.debug("assignRemainingPupils");
         Distribution result = this;
         log.debug("Open ProjectGroups: " + ProjectGroup.projectGroupNames(result.getOpenProjectGroups()));
-        for (ProjectGroup projectGroup : result.getOpenProjectGroups()) {
-            log.debug("Assigning to ProjectGroup: " + projectGroup.getProjectName());
-            log.debug("Pupils to assign: " + result.listUnassignedPupils(";"));
-            List<Pupil> pupils = result.openVotes.stream()
-                    .map(PupilVoteResult::getPupil)
-                    .toList();
-            result = result.assignPupils(projectGroup, pupils, Zugelost);
+        List<Pupil> pupils = result.openVotes.stream()
+                .map(PupilVoteResult::getPupil)
+                .toList();
+        for (Pupil pupil : pupils) {
+            log.debug("Processing pupil: " + pupil);
+            Optional<ProjectGroup> openProjectGroup = result.getOpenProjectGroupWithMostOpenSlots();
+            if (openProjectGroup.isPresent()) {
+                log.debug("Assigning " + pupil + " to " + openProjectGroup.get());
+                result = result.assignPupils(openProjectGroup.get(), List.of(pupil), Zugelost);
+            } else {
+                log.debug("No open ProjectGroup left");
+                break;
+            }
         }
         log.debug(result.createResultString());
         return result;
@@ -104,8 +117,8 @@ public class Distribution {
 
     public String createResultString() {
         return "Ergebnis:\n" + collectionToDelimitedString(attendances, "\n\n") +
-                "\n\n Nicht zugewiesene Schüler:\n\t" + listUnassignedPupils("\n\t") +
-                "\n\n Offene Projektgruppen: " + listOpenProjectGroups("\n\t");
+                "\n\n Nicht zugewiesene Schüler:\n\t" + listUnassignedPupils() +
+                "\n\n Offene Projektgruppen: " + listOpenProjectGroups();
 
     }
 
@@ -116,17 +129,26 @@ public class Distribution {
                 .toList();
     }
 
-    private String listOpenProjectGroups(String delimiter) {
+    public long getNumberOfZugelost() {
+        return attendances.stream()
+                .map(Attendance::getAttendees)
+                .flatMap(attendees -> attendees.entrySet()
+                        .stream())
+                .filter(entry -> entry.getValue() == Zugelost)
+                .count();
+    }
+
+    private String listOpenProjectGroups() {
         return getRemainingSeats()
                 .stream()
                 .map(RemainingSeats::toString)
-                .collect(Collectors.joining(delimiter));
+                .collect(Collectors.joining("\n\t"));
     }
 
-    private String listUnassignedPupils(String delimiter) {
+    private String listUnassignedPupils() {
         return getOpenVotes().stream()
                 .map(PupilVoteResult::getPupil)
                 .map(Pupil::toString)
-                .collect(Collectors.joining(delimiter));
+                .collect(Collectors.joining("\n\t"));
     }
 }
