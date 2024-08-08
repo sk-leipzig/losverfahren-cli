@@ -11,7 +11,7 @@
 
     <groupId>org.skleipzig</groupId>
     <artifactId>losverfahren-cli</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>losverfahren-cli</name>
     <description>Kommandozeilentool zum Zulosen von Schülern zu Projekten</description>
 
