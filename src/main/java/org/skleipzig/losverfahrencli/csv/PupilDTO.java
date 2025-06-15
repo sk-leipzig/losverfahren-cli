@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PupilDTO {
 
-    @CsvBindByName(column = "Vorname (Schüler)")
+    @CsvBindByName(column = "Vorname")
     private String foreName;
 
-    @CsvBindByName(column = "Name (Schüler)")
+    @CsvBindByName(column = "Name")
     private String name;
 
-    @CsvBindByName(column = "Klassenstufe")
+    @CsvBindByName(column = "Klasse")
     private String form;
 
     @CsvBindByName(column = "Email")

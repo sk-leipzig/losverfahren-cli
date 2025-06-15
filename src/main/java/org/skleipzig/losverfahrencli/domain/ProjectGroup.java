@@ -33,9 +33,10 @@ public class ProjectGroup {
         return 0;
     }
 
-    public static Optional<ProjectGroup> selectByName(List<ProjectGroup> projectGroups, String projectName) {
+    public static Optional<ProjectGroup> selectByNameAndForm(List<ProjectGroup> projectGroups, String projectName, int form) {
         return projectGroups == null ? Optional.empty() : projectGroups.stream()
                 .filter(projectGroup -> Objects.equals(projectGroup.getProjectName(), projectName))
+                .filter(projectGroup -> projectGroup.getMinForm() <= form && projectGroup.getMaxForm() >= form)
                 .findAny();
     }
 

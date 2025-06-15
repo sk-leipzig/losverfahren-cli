@@ -29,11 +29,14 @@ public class PupilVoteResult {
     public static Optional<PupilVoteResult> fromDTO(PupilVoteResultDTO pupilVoteResultDTO, List<Pupil> pupils, List<ProjectGroup> availableProjectGroups) {
         return Pupil.selectByEmail(pupils, pupilVoteResultDTO.getLogin())
                 .or(() -> Pupil.fromPupilVoteResultDTO(pupilVoteResultDTO))
-                .map(pupil -> new PupilVoteResult(pupil, Map.of(1, createPreference(1, pupilVoteResultDTO.getPrimaryChoice(), availableProjectGroups), 2, createPreference(2, pupilVoteResultDTO.getSecondaryChoice(), availableProjectGroups), 3, createPreference(3, pupilVoteResultDTO.getTertiaryChoice(), availableProjectGroups))));
+                .map(pupil -> new PupilVoteResult(pupil, Map.of(
+                        1, createPreference(1, pupilVoteResultDTO.getPrimaryChoice(), pupil.getForm(), availableProjectGroups),
+                        2, createPreference(2, pupilVoteResultDTO.getSecondaryChoice(), pupil.getForm(), availableProjectGroups),
+                        3, createPreference(3, pupilVoteResultDTO.getTertiaryChoice(), pupil.getForm(), availableProjectGroups))));
     }
 
-    private static ProjectGroupPreference createPreference(int priority, String projectName, List<ProjectGroup> availableProjectGroups) {
-        return ProjectGroup.selectByName(availableProjectGroups, projectName)
+    private static ProjectGroupPreference createPreference(int priority, String projectName, int form, List<ProjectGroup> availableProjectGroups) {
+        return ProjectGroup.selectByNameAndForm(availableProjectGroups, projectName, form)
                 .map(projectGroup -> ProjectGroupPreference.forProjectGroup(priority, projectGroup))
                 .orElse(ProjectGroupPreference.none(priority));
     }
